@@ -4,9 +4,7 @@
 #include <list>
 #include <vector>
 
-using namespace std;
 
-
-list<int> recommend(int userid, vector<vector< int>> user_items, vector<vector< int>> user_factors, vector<vector< int>> item_factors, int N);
+std::list<int> recommend(int userid, std::vector<std::vector< int>> user_items, std::vector<std::vector< int>> user_factors, std::vector<std::vector< int>> item_factors, int N);
 
 #endif
