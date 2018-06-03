@@ -1,5 +1,6 @@
 #include "recommend.h"
 #include<iostream>
+#include <algorithm>
 // #include <cuda_runtime.h>
 // #include "cublas_v2.h"
 // #define M 6
@@ -9,7 +10,8 @@
 //add to the header file
 std::vector<double> multHelp(std::vector<double> vect1, std::vector<double> vect2) {
   std::vector<double> output;
-  std::transform(vect1.begin(), vect1.end(), vect2.begin(), output.begin(), std::multiplies<double>()) 
+  std::transform(vect1.begin(), vect1.end(), vect2.begin(), output.begin(), std::multiplies<double>()); 
+  return output;
 }
 
 std::list<int> recommend(int userid, std::vector<std::vector<int>> user_items, 
@@ -23,21 +25,21 @@ std::list<int> recommend(int userid, std::vector<std::vector<int>> user_items,
   user = user_factors[userid];  
   //this is possibly just ints but idk
   // index into vector by userid [0]
-  std::vector<int> liked = user_items[userid][0];
+  std::vector<int> liked = user_items[userid];
   std::vector<std::vector<double>> scores;
   // what is item factors??
   // item_factors is a matrix * user vector
   // for vector in item_factors call mult help
  
-  std::transform(item_factors.begin(), item_factors.end(), , std::bind1st(std::multiplies<T>(),3));
-  count = n + liked.size();
+  // std::transform(item_factors.begin(), item_factors.end(), , std::bind1st(std::multiplies<T>(),3));
+  int count = n + liked.size();
   
   std::vector<double> scores_np;
   // check if it should be < or <=
   for (int i =0; i <scores.size(); i++) {
   
-  }
-  std::cout << users << std::endl;
+  };
+  //std::cout << users << std::endl;
   std::list<int> ans = {3};
   
   return ans;
