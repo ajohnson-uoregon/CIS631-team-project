@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include "cusparse.h"
+#include <cmath>
 // #define M 6
 // #define N 5
 // #define IDX2F(i,j,ld) ((((j)-1)*(ld))+((i)-1)) 
@@ -96,6 +97,33 @@ double calculate_loss(double** Cui, double** X, double** Y, double reg,
     loss += reg * (item_norm + user_norm);
 
     return loss / (total_confidence + users * items - nnz);
+}
+
+double rmse(int* indptr, int* indices, double* data, double** user_factors, double** item_factors, int users, int factors) {
+    double error = 0;
+    int num_things = 0;
+    cublasHandle_t handle;
+    cublasStatus_t err;
+
+    for (int uid = 0; uid < users; ++uid) {
+        int rowStart = indptr[uid];
+        int rowEnd = indptr[uid+1];
+
+        for (int index = rowStart; index < rowEnd; ++index) {
+            int iid = indices[index];
+            double rating = data[index];
+
+            double* user = user_factors[uid];
+            double* item = item_factors[iid];
+
+            double guess;
+
+            err = cublasDdot(handle, factors, user, 1, item, 1, &guess);
+            error += std::pow((rating-guess), 2);
+            num_things += 1;
+        }
+    }
+    return std::sqrt(error/num_things);
 }
 /*
 def rmse(values, user_factors, item_factors):
