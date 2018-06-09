@@ -2,4 +2,4 @@
 all: recommend.o
 
 recommend.o:
-	nvcc -c recommend.cu -lcublas -o rec
+	nvcc -std=c++11 recommend.cu -lcublas -o rec
