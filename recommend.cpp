@@ -1,8 +1,5 @@
 #include "recommend.h"
-#include<iostream>
-#include <algorithm>
-#include <numeric>
-#include<tuple>
+
 // #include <cuda_runtime.h>
 // #include "cublas_v2.h"
 // #define M 6
@@ -10,7 +7,7 @@
 // #define IDX2F(i,j,ld) ((((j)-1)*(ld))+((i)-1)) 
 
 //add to the header file
-std::vector<double> multHelp(std::vector<double> vect1, std::vector<double> vect2) {
+std::vector<std::tuple<int,double>> multHelp(std::vector<double> vect1, std::vector<double> vect2) {
   std::vector<double> output;
   // foreach maybe replace
   std::transform(vect1.begin(), vect1.end(), vect2.begin(), output.begin(), std::multiplies<double>()); 
@@ -64,7 +61,7 @@ std::list<int> recommend(int userid, std::vector<std::vector<int>> user_items,
   std::sort(scores_np.begin(), scores_np.end(), [](std::tuple<int,double> const &t1, std::tuple<int,double> const &t2) {
       return std::get<1>(t1) > std::get<1>(t2);
     });
-  std::list<int> ans = {3};
   
-  return ans;
+  
+  return scores_np;
 }
