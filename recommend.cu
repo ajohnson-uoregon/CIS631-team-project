@@ -153,58 +153,23 @@ double calculate_loss(double** Cui, double** X, double** Y, double reg,
     return loss / (total_confidence + users * items - nnz);
 }
 
-double rmse(int* indptr, int* indices, double* data, double** user_factors, double** item_factors, int users, int factors) {
+double rmse(double** user_factors, double** item_factors, int* rows, int* cols, double* ratings, int num_things, int factors) {
     double error = 0;
-    int num_things = 0;
     cublasHandle_t handle;
     cublasStatus_t err;
 
-    for (int uid = 0; uid < users; ++uid) {
-        int rowStart = indptr[uid];
-        int rowEnd = indptr[uid+1];
+    for (int k = 0; k < num_things; ++k) {
+        int uid = rows[k];
+        int iid = cols[k];
+        double rating = ratings[k];
 
-        for (int index = rowStart; index < rowEnd; ++index) {
-            int iid = indices[index];
-            double rating = data[index];
+        double* user = user_factors[uid];
+        double* item = item_factors[iid];
 
-            double* user = user_factors[uid];
-            double* item = item_factors[iid];
+        double guess;
 
-            double guess;
-
-            err = cublasDdot(handle, factors, user, 1, item, 1, &guess);
-            error += std::pow((rating-guess), 2);
-            num_things += 1;
-        }
+        err = cublasDdot(handle, factors, user, 1, item, 1, &guess);
+        error += std::pow((rating-guess), 2);
     }
     return std::sqrt(error/num_things);
 }
-/*
-def rmse(values, user_factors, item_factors):
-    error = 0
-    indptr, indices, data = values
-    num_things = 0
-    for uid in range(len(indptr) - 2):
-        row_start = indptr[uid]
-        row_end = indptr[uid+1]
-        for index in range(row_start,row_end):
-            iid = indices[index]
-            rating = data[index]
-
-            user = petsc.Vec()
-            user.createSeq(factors)
-            user.setValues(list(range(factors)), user_factors.getValues([uid], list(range(factors))))
-            user.assemble()
-
-            item = petsc.Vec()
-            item.createSeq(factors)
-            item.setValues(list(range(factors)), item_factors.getValues([iid], list(range(factors))))
-            item.assemble()
-
-            guess = user.dot(item)
-
-            error += (rating-guess)**2
-            num_things += 1
-
-    return math.sqrt(error/num_things)
-*/
