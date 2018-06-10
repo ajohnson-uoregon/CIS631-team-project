@@ -55,9 +55,6 @@ std::list<int> recommend(int userid, std::vector<std::vector<int>> user_items,
   }
 
 
-
-
-
   //std::cout << users << std::endl;
   std::list<int> ans = {3};
   
