@@ -7,14 +7,14 @@
 // #define IDX2F(i,j,ld) ((((j)-1)*(ld))+((i)-1)) 
 
 //add to the header file
-std::vector<std::tuple<int,double>> multHelp(std::vector<double> vect1, std::vector<double> vect2) {
+std::vector<double> multHelp(std::vector<double> vect1, std::vector<double> vect2) {
   std::vector<double> output;
   // foreach maybe replace
   std::transform(vect1.begin(), vect1.end(), vect2.begin(), output.begin(), std::multiplies<double>()); 
   return output;
 }
-
-std::list<int> recommend(int userid, std::vector<std::vector<int>> user_items, 
+ 
+std::vector<std::tuple<int,double>> recommend(int userid, std::vector<std::vector<int>> user_items, 
 	       		     std::vector<std::vector<double>> user_factors, 
 			     std::vector<std::vector<double>> item_factors, 
 			     			      int n)

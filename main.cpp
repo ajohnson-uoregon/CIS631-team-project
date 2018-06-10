@@ -1,17 +1,16 @@
 #include<iostream> 
 #include "recommend.h"
-#include "recommend.cu"
-
-using namespace std;
- 
-void print(const list<int>& s) {
-	list<int>::const_iterator i;
-	for( i = s.begin(); i != s.end(); ++i)
-		cout << *i << " ";
-	cout << endl;
-}
+// #include <cuda_runtime.h>
+// #include "cublas_v2.h"
+// #include "cusparse.h"
+#include <cmath>
+#include <vector>
+#include <fstream>
+#include <iomanip>
+#include <cstring>
 
 int main(int argc, char** argv) {
+  std::cout << "here"<< std::endl;  
     char* fname = argv[1];
     int iterations = strtol(argv[2], NULL, 10);
     int factors = strtol(argv[3], NULL, 10);
