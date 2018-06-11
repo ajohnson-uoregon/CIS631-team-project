@@ -5,8 +5,9 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
-void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices.
-                    std::vector<double>* data)
+
+void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,
+                    std::vector<double>* data, int* users, int* items)
 {
     FILE* fp;
     char* line = NULL;
@@ -24,26 +25,32 @@ void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indice
                 int col = strtol(strtok(line, ","), NULL, 10);
                 double rating = strtol(strtok(NULL, ","), NULL, 10);
 
-                indices.push_back(col);
-                data.push_back(rating);
+                indices->push_back(col);
+                data->push_back(rating);
 
                 if (col > users) {
                     users = col;
                 }
             }
         }
+
+    *items = indptr->size();
+    *users += 1;
     fclose(fp);
 }
 
 int main(int argc, char** argv) {
     std::cout << "here"<< std::endl;  
     char* fname = argv[1];
-    char* fnameT = argv[2]];
+    char* fnameT = argv[2];
     int iterations = strtol(argv[3], NULL, 10);
     int factors = strtol(argv[4], NULL, 10);
 
     int users = 0;
     int items = 0;
+
+    int usersT = 0;
+    int itemsT = 0;
 
     printf("%s\n", fname);
 
@@ -57,8 +64,8 @@ int main(int argc, char** argv) {
     std::vector<double> dataT;
 
     //need to do file processing twice
-    fileProcess(fname, &indptr, &indices, &data);
-    fileProcess(fnameT,&indptrT, &indicesT, &dataT);
+    fileProcess(fname, &indptr, &indices, &data, &users, &items);
+    fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
     //create factors matrices x2
     double userFactors[users][factors];
     double itemFactors[items][factors];
@@ -84,8 +91,6 @@ int main(int argc, char** argv) {
     // we guchhi
     // predict things and see accuracy 
 
-    items = indptr.size();
-    users += 1;
 
     printf("users: %d\n", users);
     printf("items: %d\n", items);
