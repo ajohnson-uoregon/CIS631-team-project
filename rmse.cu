@@ -30,8 +30,8 @@ double rmse(double* user_factors, double* item_factors, int* rows, int* cols, do
         int iid = cols[k];
         double rating = ratings[k];
 
-        double* user = user_factors[uid*k];
-        double* item = item_factors[iid*k];
+        double* user = &user_factors[uid*k];
+        double* item = &item_factors[iid*k];
 
         double guess;
 
