@@ -1,4 +1,4 @@
-#include<iostream> 
+#include<iostream>
 #include "recommend.h"
 #include <cmath>
 #include <vector>
@@ -9,7 +9,7 @@
 #include "cublas_v2.h"
 #include "rmse.h"
 #include "leastsqr.h"
-#include "calculateLoss.h" 
+#include "calculateLoss.h"
 
 void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,
                     std::vector<double>* data, int* users, int* items)
@@ -77,7 +77,7 @@ void fileDense(char* fname, std::vector<int>* rows, std::vector<int>* cols,
 
 
 int main(int argc, char** argv) {
-    std::cout << "here"<< std::endl;  
+    std::cout << "here"<< std::endl;
     char* fname = argv[1];
     char* fnameT = argv[2];
     char* fnameD = argv[3];
@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
 
     cublasStatus_t stat;
     cublasHandle_t handle;
+    cudaError_t err;
 
     int users = 0;
     int items = 0;
@@ -95,7 +96,7 @@ int main(int argc, char** argv) {
 
     printf("%s\n", fname);
 
-    
+
     std::vector<int> indptr;
     std::vector<int> indices;
     std::vector<double> data;
@@ -107,7 +108,7 @@ int main(int argc, char** argv) {
     //need to do file processing twice
     fileProcess(fname, &indptr, &indices, &data, &users, &items);
     fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
-   
+
     stat = cublasCreate(&handle);
     if (stat != CUBLAS_STATUS_SUCCESS) {
         printf ("CUBLAS initialization failed\n");
@@ -115,11 +116,25 @@ int main(int argc, char** argv) {
     }
 
     //create factors matrices x2
-    double userFactors[users][factors];
-    double itemFactors[items][factors];
+    // double userFactors[users][factors];
+    // double itemFactors[items][factors];
 
-    GPU_fill_rand(userFactors[0], users, factors);
-    GPU_fill_rand(itemFactors[0], items, factors);
+    double* userFactors;
+    double* itemFactors;
+
+    err = cudaMallocManaged(&userFactors, users*factors*sizeof(double));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      return;
+    }
+
+    err = cudaMallocManaged(&itemFactors, items*factors*sizeof(double));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      return;
+    }
+    GPU_fill_rand(userFactors, users, factors);
+    GPU_fill_rand(itemFactors, items, factors);
 
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
@@ -129,7 +144,7 @@ int main(int argc, char** argv) {
         least_squares(handle, indptrT.data(), indicesT.data(), dataT.data(), items,
                         users, factors, itemFactors[0], userFactors[0],
                         .01, 0, items);
-        calculate_loss(handle, indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01, 
+        calculate_loss(handle, indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01,
                         users, items, factors, data.size());
     }
     // run rmse
@@ -137,15 +152,15 @@ int main(int argc, char** argv) {
     //come back to
     std::vector<int> testRow;
     std::vector<int> testCol;
-    std::vector<double> testData; 
+    std::vector<double> testData;
     int testLength;
-    fileDense(fnameD, &testRow, &testCol, &testData, &testLength); 
-    totErr = rmse(handle, userFactors[0], itemFactors[0], testRow.data(), 
-                testCol.data(), testData.data(), 
+    fileDense(fnameD, &testRow, &testCol, &testData, &testLength);
+    totErr = rmse(handle, userFactors[0], itemFactors[0], testRow.data(),
+                testCol.data(), testData.data(),
                 testLength, factors);
     // we guchhi
     std::cout<<totErr<<std::endl;
-    // predict things and see accuracy 
+    // predict things and see accuracy
 
 
     printf("users: %d\n", users);
