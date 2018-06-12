@@ -103,11 +103,11 @@ int main(int argc, char** argv) {
     fileProcess(fname, &indptr, &indices, &data, &users, &items);
     fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
     //create factors matrices x2
-    double userFactors[users*factors];
-    double itemFactors[items*factors];
+    double userFactors[users][factors];
+    double itemFactors[items][factors];
 
-    GPU_fill_rand(userFactors, users, factors);
-    GPU_fill_rand(itemFactors, items, factors);
+    GPU_fill_rand(userFactors[0], const users, const factors);
+    GPU_fill_rand(itemFactors[0], const items, const factors);
 
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
