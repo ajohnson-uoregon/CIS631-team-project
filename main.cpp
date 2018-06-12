@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
     fileProcess(fname, &indptr, &indices, &data, &users, &items);
     fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
     //create factors matrices x2
-    double userFactors[users][factors];
-    double itemFactors[items][factors];
+    double userFactors[users*factors];
+    double itemFactors[items*factors];
 
     GPU_fill_rand(userFactors, users, factors);
     GPU_fill_rand(itemFactors, items, factors);
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
         least_squares(indptrT.data(), indicesT.data(), dataT.data(),
                         users, factors, itemFactors, userFactors,
                         .01, 0, items);
-        calculate_loss(indptr.data(), userFactors, itemFactors, .01, 
+        calculate_loss(indptr.data(), indices.data(), data.data(), userFactors, itemFactors, .01, 
                         users, items, factors, data.size());
     }
     // run rmse
