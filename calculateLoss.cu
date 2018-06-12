@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <cstring>
 
-double calculate_loss(double** Cui, double** X, double** Y, double reg, 
+double calculate_loss(int* indptr, int* indices, double* data, double** X, double** Y, double reg, 
     int users, int items, int factors, int nnz) {
   
       int loss = 0;
@@ -39,15 +39,15 @@ double calculate_loss(double** Cui, double** X, double** Y, double reg,
           err = cublasDgemv(handle, CUBLAS_OP_N, items, factors,
                     &alpha, Y[0], items, Xu, 1, &beta, r, 1);
           
-          int rowStart = Cui[0][u];
-          int rowEnd = Cui[0][u+1];
+          int rowStart = indptr[u];
+          int rowEnd = indptr[u+1];
   
           int cols[rowEnd-rowStart];
-          memcpy(cols, &Cui[1][rowStart], rowEnd-rowStart);
+          memcpy(cols, &indices[rowStart], rowEnd-rowStart);
           //int* cols = Cui[1][rowStart:rowEnd];
           
           double vals[rowEnd-rowStart];
-          memcpy(vals, &Cui[2][rowStart], rowEnd-rowStart);
+          memcpy(vals, &data[rowStart], rowEnd-rowStart);
           //double* vals = Cui[2][rowStart:rowEnd];
           for (int index = 0; index < rowEnd-rowStart; ++index) {
               int i = cols[index];
