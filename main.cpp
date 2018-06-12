@@ -40,6 +40,7 @@ void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indice
         }
 
     *items = indptr->size();
+    indptr->push_back(indices->size());
     *users += 1;
     fclose(fp);
 }
@@ -97,17 +98,17 @@ int main(int argc, char** argv) {
     printf("%s\n", fname);
 
 
-    std::vector<int> indptr;
-    std::vector<int> indices;
-    std::vector<double> data;
+    std::vector<int> indptr_vec;
+    std::vector<int> indices_vec;
+    std::vector<double> data_vec;
 
-    std::vector<int> indptrT;
-    std::vector<int> indicesT;
-    std::vector<double> dataT;
+    std::vector<int> indptrT_vec;
+    std::vector<int> indicesT_vec;
+    std::vector<double> dataT_vec;
 
     //need to do file processing twice
-    fileProcess(fname, &indptr, &indices, &data, &users, &items);
-    fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
+    fileProcess(fname, &indptr_vec, &indices_vec, &data_vec, &users, &items);
+    fileProcess(fnameT,&indptrT_vec, &indicesT_vec, &dataT_vec, &usersT, &itemsT);
 
     printf("done reading from files\n");
 
@@ -151,22 +152,209 @@ int main(int argc, char** argv) {
     GPU_fill_rand(itemFactors, items, factors);
 
     printf("filled random matrices\n");
-    cudaFree(userFactors);
-    cudaFree(itemFactors);
-    cublasDestroy(handle);
-    return 0;
+
+    int* indptr;
+    int* indices;
+    double* data;
+
+    int* indptrT;
+    int* indicesT;
+    double* dataT;
+
+    err = cudaMallocManaged(&indptr, indptr_vec.size()*sizeof(int));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into indptr\n");
+    err = cudaMemcpy(indptr, indptr_vec.data(), indptr_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    err = cudaMallocManaged(&indices, indices_vec.size()*sizeof(int));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into indices\n");
+    err = cudaMemcpy(indices, indices_vec.data(), indices_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    err = cudaMallocManaged(&data, data_vec.size()*sizeof(double));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into data\n");
+    err = cudaMemcpy(data, data_vec.data(), data_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    //////////////////////
+
+    err = cudaMallocManaged(&indptrT, indptrT_vec.size()*sizeof(int));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into indptrT\n");
+    err = cudaMemcpy(indptrT, indptrT_vec.data(), indptrT_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    err = cudaMallocManaged(&indicesT, indicesT_vec.size()*sizeof(int));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cudaFree(indicesT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into indicesT\n");
+    err = cudaMemcpy(indicesT, indicesT_vec.data(), indicesT_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cudaFree(indicesT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    err = cudaMallocManaged(&dataT, dataT_vec.size()*sizeof(double));
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cudaFree(indicesT);
+      cudaFree(dataT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    printf("copying values into dataT\n");
+    err = cudaMemcpy(dataT, dataT_vec.data(), dataT_vec.size(), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+      printf("%s\n", cudaGetErrorString(err));
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cudaFree(indptr);
+      cudaFree(indices);
+      cudaFree(data);
+      cudaFree(indptrT);
+      cudaFree(indicesT);
+      cudaFree(dataT);
+      cublasDestroy(handle);
+      return -1;
+    }
+
+    // for (int i =0; i < 10; ++i) {
+    //   printf("%f\n", userFactors[i]);
+    //   printf("%f\n", data_vec[i]);
+    //   printf("%f\n", data[i]);
+    //   printf("\n");
+    // }
+    printf("%d\n", indptr_vec[0]);
+    printf("%d\n", indptr_vec[1]);
+
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
-        least_squares(handle, indptr.data(), indices.data(), data.data(), users,
+        printf("first least squares iter %d\n", i);
+        least_squares(handle, indptr, indices, data, users,
                         items, factors, userFactors, itemFactors,
                         .01, 0, users);
-        least_squares(handle, indptrT.data(), indicesT.data(), dataT.data(), items,
+        printf("second least squares iter %d\n", i);
+        least_squares(handle, indptrT, indicesT, dataT, items,
                         users, factors, itemFactors, userFactors,
                         .01, 0, items);
-        calculate_loss(handle, indptr.data(), indices.data(), data.data(),
+        printf("calculate loss iter %d\n", i);
+        calculate_loss(handle, indptr, indices, data,
                         userFactors, itemFactors, .01,
-                        users, items, factors, data.size());
+                        users, items, factors, data_vec.size());
     }
+
+    printf("freeing things\n");
+    cudaFree(userFactors);
+    cudaFree(itemFactors);
+    cudaFree(indptr);
+    cudaFree(indices);
+    cudaFree(data);
+    cudaFree(indptrT);
+    cudaFree(indicesT);
+    cudaFree(dataT);
+    cublasDestroy(handle);
+    return 0;
     // run rmse
     double totErr;
     //come back to
