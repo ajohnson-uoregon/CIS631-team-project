@@ -33,7 +33,7 @@ double calculate_loss(int* indptr, int* indices, double* data, double* X, double
           double temp = 1.0;
   
           double* r;
-          double* Xu = X[u];
+          double* Xu = &X[u*factors];
           
   
           err = cublasDgemv(handle, CUBLAS_OP_N, items, factors,
@@ -53,7 +53,7 @@ double calculate_loss(int* indptr, int* indices, double* data, double* X, double
               int i = cols[index];
               double confidence = vals[index];
   
-              double* Yi = Y[i];
+              double* Yi = &Y[i*factors];
   
               double d;
               err = cublasDdot(handle, factors, Yi, 1, Xu, 1, &d);
