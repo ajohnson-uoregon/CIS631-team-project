@@ -109,12 +109,16 @@ int main(int argc, char** argv) {
     fileProcess(fname, &indptr, &indices, &data, &users, &items);
     fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
 
+    printf("done reading from files\n");
+
     stat = cublasCreate(&handle);
     if (stat != CUBLAS_STATUS_SUCCESS) {
         printf ("CUBLAS initialization failed\n");
+        printf("%d\n", stat);
+        cublasDestroy(handle);
         return EXIT_FAILURE;
     }
-
+    printf("done initializing cublas\n");
     //create factors matrices x2
     // double userFactors[users][factors];
     // double itemFactors[items][factors];
@@ -125,26 +129,39 @@ int main(int argc, char** argv) {
     err = cudaMallocManaged(&userFactors, users*factors*sizeof(double));
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
-      return;
+      cudaFree(userFactors);
+      cublasDestroy(handle);
+      return -1;
     }
 
+    printf("malloced userfactors\n");
+    
     err = cudaMallocManaged(&itemFactors, items*factors*sizeof(double));
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
-      return;
+      cudaFree(userFactors);
+      cudaFree(itemFactors);
+      cublasDestroy(handle);
+      return -1;
     }
+    
+    printf("malloced itemfactors\n");
+    
     GPU_fill_rand(userFactors, users, factors);
     GPU_fill_rand(itemFactors, items, factors);
-
+    
+    printf("filled random matrices\n");
+    return 0;
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
         least_squares(handle, indptr.data(), indices.data(), data.data(), users,
-                        items, factors, userFactors[0], itemFactors[0],
+                        items, factors, userFactors, itemFactors,
                         .01, 0, users);
         least_squares(handle, indptrT.data(), indicesT.data(), dataT.data(), items,
-                        users, factors, itemFactors[0], userFactors[0],
+                        users, factors, itemFactors, userFactors,
                         .01, 0, items);
-        calculate_loss(handle, indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01,
+        calculate_loss(handle, indptr.data(), indices.data(), data.data(), 
+                        userFactors, itemFactors, .01,
                         users, items, factors, data.size());
     }
     // run rmse
@@ -155,7 +172,7 @@ int main(int argc, char** argv) {
     std::vector<double> testData;
     int testLength;
     fileDense(fnameD, &testRow, &testCol, &testData, &testLength);
-    totErr = rmse(handle, userFactors[0], itemFactors[0], testRow.data(),
+    totErr = rmse(handle, userFactors, itemFactors, testRow.data(),
                 testCol.data(), testData.data(),
                 testLength, factors);
     // we guchhi

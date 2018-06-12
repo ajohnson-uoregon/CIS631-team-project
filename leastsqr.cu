@@ -3,11 +3,25 @@
 void GPU_fill_rand(double *A, const int nr_rows_A, const int nr_cols_A)
 {
     curandGenerator_t prng;
-    curandCreateGenerator(&prng, CURAND_RNG_PSEUDO_XORWOW);
+    curandStatus_t stat;
+    
+    stat = curandCreateGenerator(&prng, CURAND_RNG_PSEUDO_XORWOW);
+    if (stat != CURAND_STATUS_SUCCESS) {
+        printf("error at %s:%d\n",__FILE__, __LINE__);
+        return;
+    }
+    stat = curandSetPseudoRandomGeneratorSeed(prng, (unsigned long long) clock());
+    if (stat != CURAND_STATUS_SUCCESS) {
+        printf("error at %s:%d\n",__FILE__, __LINE__);
+        return;
+    }
 
-    curandSetPseudoRandomGeneratorSeed(prng, (unsigned long long) clock());
+    stat = curandGenerateUniformDouble(prng, A, nr_rows_A * nr_cols_A);
+    if (stat != CURAND_STATUS_SUCCESS) {
+        printf("error at %s:%d\n",__FILE__, __LINE__);
+        return;
+    }
 
-    curandGenerateUniformDouble(prng, A, nr_rows_A * nr_cols_A);
 }
 
 
