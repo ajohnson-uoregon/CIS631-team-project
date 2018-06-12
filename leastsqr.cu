@@ -31,7 +31,7 @@ void least_squares (int* indptr, int* indic, double* data, int users,
     double yt[factors][items];
     
     err = cublasDgeam(handle, CUBLAS_OP_T, CUBLAS_OP_N, items, factors,
-        &alpha, y[0], items, &beta, y[0], items, yt[0], factors);
+        &alpha, y, items, &beta, y, items, yt[0], factors);
     
     cublasSideMode_t mode = CUBLAS_SIDE_LEFT;
 
@@ -55,7 +55,7 @@ void least_squares (int* indptr, int* indic, double* data, int users,
         }   
         double ansC[items][factors];
 
-        cublasDdgmm(handle, mode, items, factors, y[0], items, diagVec, 1, ansC[0], items);
+        cublasDdgmm(handle, mode, items, factors, y, items, diagVec, 1, ansC[0], items);
         double ytcy[factors][factors];
 
         cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, factors, factors, 
