@@ -75,7 +75,8 @@ void least_squares (int* indptr, int* indic, double* data, int users,
         cusolverDnDgetrf(solve_handle, factors, factors, ytcy[0], factors, workspace, NULL, rfOut);
         int* rsOut;
         cusolverDnDgetrs(solve_handle, CUBLAS_OP_N, factors, 1, ytcy[0], factors, NULL, ytcu, factors, rsOut);
-        x[i] = ytcu;
+        memcpy(&x[(i*factors)], ytcu, factors);
+        //x[i] = ytcu;
     }
 }
 #endif
