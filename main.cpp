@@ -106,15 +106,15 @@ int main(int argc, char** argv) {
     double userFactors[users][factors];
     double itemFactors[items][factors];
 
-    GPU_fill_rand(userFactors[0], const users, const factors);
-    GPU_fill_rand(itemFactors[0], const items, const factors);
+    GPU_fill_rand(userFactors[0], users, factors);
+    GPU_fill_rand(itemFactors[0], items, factors);
 
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
-        least_squares(indptr.data(), indices.data(), data.data(),
+        least_squares(indptr.data(), indices.data(), data.data(), users,
                         items, factors, userFactors, itemFactors,
                         .01, 0, users);
-        least_squares(indptrT.data(), indicesT.data(), dataT.data(),
+        least_squares(indptrT.data(), indicesT.data(), dataT.data(), items,
                         users, factors, itemFactors, userFactors,
                         .01, 0, items);
         calculate_loss(indptr.data(), indices.data(), data.data(), userFactors, itemFactors, .01, 
