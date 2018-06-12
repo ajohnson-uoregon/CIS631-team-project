@@ -7,14 +7,14 @@
 #include <cusolverDn.h>
 #include <curand.h>
 
-void GPU_fill_rand(float *A, int nr_rows_A, int nr_cols_A)
+void GPU_fill_rand(double *A, int nr_rows_A, int nr_cols_A)
 {
     curandGenerator_t prng;
     curandCreateGenerator(&prng, CURAND_RNG_PSEUDO_XORWOW);
 
     curandSetPseudoRandomGeneratorSeed(prng, (unsigned long long) clock());
 
-    curandGenerateUniform(prng, A, nr_rows_A * nr_cols_A);
+    curandGenerateUniformDouble(prng, A, nr_rows_A * nr_cols_A);
 }
 
 
