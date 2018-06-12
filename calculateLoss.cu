@@ -74,7 +74,7 @@ double calculate_loss(int* indptr, int* indices, double* data, double* X, double
       }
   
       for (int i = 0; i < items; ++i) {
-          double* Yi = Y[i];
+          double* Yi = &Y[i*factors];
   
           double other_temp;
    
