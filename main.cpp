@@ -5,8 +5,8 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
-#include "rmse.cu"
-#include "leastsqr.cu"
+#include "rmse.h"
+#include "leastsqr.h"
 #include "calculateLoss.cu" 
 
 void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,

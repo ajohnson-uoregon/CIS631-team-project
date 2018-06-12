@@ -1,16 +1,4 @@
-#ifndef RECOMMEND_CU
-#define RECOMMEND_CU
-
-// #include "recommend.h"
-#include <iostream>
-#include <cuda_runtime.h>
-#include "cublas_v2.h"
-#include "cusparse.h"
-#include <cmath>
-#include <vector>
-#include <fstream>
-#include <iomanip>
-#include <cstring>
+#include "rmse.h"
 // #define M 6
 // #define N 5
 // #define IDX2F(i,j,ld) ((((j)-1)*(ld))+((i)-1)) 
@@ -40,5 +28,3 @@ double rmse(double* user_factors, double* item_factors, int* rows, int* cols, do
     }
     return std::sqrt(error/num_things);
 }
-
-#endif
