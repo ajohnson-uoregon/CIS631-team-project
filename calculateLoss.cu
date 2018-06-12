@@ -1,4 +1,4 @@
-#import "calculateLoss.h"
+#include "calculateLoss.h"
 
 double calculate_loss(int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
     int users, int items, int factors, int nnz) {
@@ -76,4 +76,3 @@ double calculate_loss(int* indptr, int* indices, double* data, double* X, double
       return loss / (total_confidence + users * items - nnz);
   }
 
-#endif
