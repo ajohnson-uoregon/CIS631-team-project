@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
     std::vector<double> testData; 
     int testLength;
     fileDense(fnameD, &testRow, &testCol, &testData, &testLength); 
-    totErr = rmse(userFactors[0], itemFactors, testRow.data(), 
+    totErr = rmse(userFactors[0], itemFactors[0], testRow.data(), 
                 testCol.data(), testData.data(), 
                 testLength, factors);
     // we guchhi
