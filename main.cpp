@@ -5,7 +5,9 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
-#include <rmse.cu> 
+#include "rmse.cu"
+#include "leastsqr.cu"
+#include "calculateLoss.cu" 
 
 void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,
                     std::vector<double>* data, int* users, int* items)
@@ -126,9 +128,9 @@ int main(int argc, char** argv) {
     std::vector<double> testData; 
     int testLength;
     fileDense(fnameD, &testRow, &testCol, &testData, &testLength); 
-    totErr = rmse(user_factors, item_factors, testRow.data(), 
+    totErr = rmse(userFactors, itemFactors, testRow.data(), 
                 testCol.data(), testData.data(), 
-                testLength, factors)
+                testLength, factors);
     // we guchhi
     std::cout<<totErr<<std::endl;
     // predict things and see accuracy 
