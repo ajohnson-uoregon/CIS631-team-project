@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
         least_squares(indptrT.data(), indicesT.data(), dataT.data(), items,
                         users, factors, itemFactors[0], userFactors[0],
                         .01, 0, items);
-        calculate_loss(indptr.data(), indices.data(), data.data(), userFactors, itemFactors, .01, 
+        calculate_loss(indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01, 
                         users, items, factors, data.size());
     }
     // run rmse
