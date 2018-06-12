@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <cstring>
 
-double calculate_loss(int* indptr, int* indices, double* data, double** X, double** Y, double reg, 
+double calculate_loss(int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
     int users, int items, int factors, int nnz) {
   
       int loss = 0;
@@ -27,7 +27,7 @@ double calculate_loss(int* indptr, int* indices, double* data, double** X, doubl
   
       // do transpose
       err = cublasDgeam(handle, CUBLAS_OP_T, CUBLAS_OP_N, items, factors,
-                &alpha, Y[0], items, &beta, Y[0], items, YtY[0], factors);
+                &alpha, Y, items, &beta, Y, items, YtY[0], factors);
       
       for (int u = 0; u < users; ++u) {
           double temp = 1.0;
@@ -37,7 +37,7 @@ double calculate_loss(int* indptr, int* indices, double* data, double** X, doubl
           
   
           err = cublasDgemv(handle, CUBLAS_OP_N, items, factors,
-                    &alpha, Y[0], items, Xu, 1, &beta, r, 1);
+                    &alpha, Y, items, Xu, 1, &beta, r, 1);
           
           int rowStart = indptr[u];
           int rowEnd = indptr[u+1];
