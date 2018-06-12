@@ -20,7 +20,7 @@ void GPU_fill_rand(double *A, const int nr_rows_A, const int nr_cols_A)
 
 void least_squares (int* indptr, int* indic, double* data, int users, 
                         int items, int factors,
-                        double** x, double** y, 
+                        double* x, double* y, 
                         double reg, int istart, int iend) 
 {
     cublasStatus_t err;

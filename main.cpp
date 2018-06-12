@@ -112,10 +112,10 @@ int main(int argc, char** argv) {
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
         least_squares(indptr.data(), indices.data(), data.data(), users,
-                        items, factors, userFactors, itemFactors,
+                        items, factors, userFactors[0], itemFactors[0],
                         .01, 0, users);
         least_squares(indptrT.data(), indicesT.data(), dataT.data(), items,
-                        users, factors, itemFactors, userFactors,
+                        users, factors, itemFactors[0], userFactors[0],
                         .01, 0, items);
         calculate_loss(indptr.data(), indices.data(), data.data(), userFactors, itemFactors, .01, 
                         users, items, factors, data.size());
