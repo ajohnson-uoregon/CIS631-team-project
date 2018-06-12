@@ -7,7 +7,7 @@
 #include <cusolverDn.h>
 #include <curand.h>
 void GPU_fill_rand(double *A, const int nr_rows_A, const int nr_cols_A);
-void least_squares (int* indptr, int* indic, double* data, int users, 
+void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data, int users, 
                         int items, int factors,
                         double* x, double* y, 
                         double reg, int istart, int iend);

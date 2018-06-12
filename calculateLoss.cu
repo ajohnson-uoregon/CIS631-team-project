@@ -1,6 +1,6 @@
 #include "calculateLoss.h"
 
-double calculate_loss(int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
+double calculate_loss(cublasHandle_t handle, int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
     int users, int items, int factors, int nnz) {
   
       int loss = 0;
@@ -8,7 +8,6 @@ double calculate_loss(int* indptr, int* indices, double* data, double* X, double
       int item_norm = 0;
       int user_norm = 0;
       cublasStatus_t err;
-      cublasHandle_t handle;
   
       double** YtY;
       const double alpha = 1;

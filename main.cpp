@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
+#include "cuda_runtime.h"
+#include "cublas_v2.h"
 #include "rmse.h"
 #include "leastsqr.h"
 #include "calculateLoss.h" 
@@ -82,6 +84,9 @@ int main(int argc, char** argv) {
     int iterations = strtol(argv[4], NULL, 10);
     int factors = strtol(argv[5], NULL, 10);
 
+    cublasStatus_t stat;
+    cublasHandle_t handle;
+
     int users = 0;
     int items = 0;
 
@@ -102,6 +107,13 @@ int main(int argc, char** argv) {
     //need to do file processing twice
     fileProcess(fname, &indptr, &indices, &data, &users, &items);
     fileProcess(fnameT,&indptrT, &indicesT, &dataT, &usersT, &itemsT);
+   
+    stat = cublasCreate(&handle);
+    if (stat != CUBLAS_STATUS_SUCCESS) {
+        printf ("CUBLAS initialization failed\n");
+        return EXIT_FAILURE;
+    }
+
     //create factors matrices x2
     double userFactors[users][factors];
     double itemFactors[items][factors];
@@ -111,13 +123,13 @@ int main(int argc, char** argv) {
 
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
-        least_squares(indptr.data(), indices.data(), data.data(), users,
+        least_squares(handle, indptr.data(), indices.data(), data.data(), users,
                         items, factors, userFactors[0], itemFactors[0],
                         .01, 0, users);
-        least_squares(indptrT.data(), indicesT.data(), dataT.data(), items,
+        least_squares(handle, indptrT.data(), indicesT.data(), dataT.data(), items,
                         users, factors, itemFactors[0], userFactors[0],
                         .01, 0, items);
-        calculate_loss(indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01, 
+        calculate_loss(handle, indptr.data(), indices.data(), data.data(), userFactors[0], itemFactors[0], .01, 
                         users, items, factors, data.size());
     }
     // run rmse
@@ -128,7 +140,7 @@ int main(int argc, char** argv) {
     std::vector<double> testData; 
     int testLength;
     fileDense(fnameD, &testRow, &testCol, &testData, &testLength); 
-    totErr = rmse(userFactors[0], itemFactors[0], testRow.data(), 
+    totErr = rmse(handle, userFactors[0], itemFactors[0], testRow.data(), 
                 testCol.data(), testData.data(), 
                 testLength, factors);
     // we guchhi

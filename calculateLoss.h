@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstring>
 
-double calculate_loss(int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
+double calculate_loss(cublasHandle_t handle, int* indptr, int* indices, double* data, double* X, double* Y, double reg, 
     int users, int items, int factors, int nnz);
 
 #endif

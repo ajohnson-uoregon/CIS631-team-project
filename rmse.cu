@@ -8,9 +8,9 @@
 //  Cui[1] = indices - which columns in that row exist
 //  Cui[2] = data - what's in that column
 
-double rmse(double* user_factors, double* item_factors, int* rows, int* cols, double* ratings, int num_things, int factors) {
+double rmse(cublasHandle_t handle, double* user_factors, double* item_factors, 
+            int* rows, int* cols, double* ratings, int num_things, int factors) {
     double error = 0;
-    cublasHandle_t handle;
     cublasStatus_t err;
 
     for (int k = 0; k < num_things; ++k) {

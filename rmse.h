@@ -8,6 +8,6 @@
 #include <cmath>
 #include <cstring>
 
-double rmse(double* user_factors, double* item_factors, int* rows, int* cols, double* ratings, int num_things, int factors);
+double rmse(cublasHandle_t handle, double* user_factors, double* item_factors, int* rows, int* cols, double* ratings, int num_things, int factors);
 
 #endif
