@@ -19,7 +19,7 @@ void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indice
         while ((read = getline(&line, &len, fp)) != -1) {
             int l = strlen(line);
             if (line[l-2] == ':') {
-                indptr.push_back(indices.size());
+                indptr->push_back(indices->size());
             }
             else {
                 int col = strtol(strtok(line, ","), NULL, 10);
@@ -28,8 +28,8 @@ void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indice
                 indices->push_back(col);
                 data->push_back(rating);
 
-                if (col > users) {
-                    users = col;
+                if (col > *users) {
+                    *users = col;
                 }
             }
         }
@@ -39,12 +39,45 @@ void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indice
     fclose(fp);
 }
 
+void fileDense(char* fname, std::vector<int>* rows, std::vector<int>* cols,
+                    std::vector<double>* data, int* length)
+{
+    FILE* fp;
+    char* line = NULL;
+    ssize_t read;
+    size_t len = 0;
+    fp = fopen(fname, "r");
+    printf("done with setup\n");
+    int index = 0;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        int l = strlen(line);
+        int col;
+        if (line[l-2] == ':') {
+            col = strtol(strtok(line, ":"), NULL, 10);
+        }
+        else {
+            int row = strtol(strtok(line, ","), NULL, 10);
+            double rating = strtol(strtok(NULL, ","), NULL, 10);
+
+            cols->push_back(col);
+            rows->push_back(row);
+            data->push_back(rating);
+        }
+    }
+
+    *length = rows.size();
+    fclose(fp);
+}
+
+
+
 int main(int argc, char** argv) {
     std::cout << "here"<< std::endl;  
     char* fname = argv[1];
     char* fnameT = argv[2];
-    int iterations = strtol(argv[3], NULL, 10);
-    int factors = strtol(argv[4], NULL, 10);
+    char* fnameD = argv[3];
+    int iterations = strtol(argv[4], NULL, 10);
+    int factors = strtol(argv[5], NULL, 10);
 
     int users = 0;
     int items = 0;
@@ -87,8 +120,16 @@ int main(int argc, char** argv) {
     // run rmse
     double totErr;
     //come back to
-    //totErr = rmse(user_factors, item_factors, )
+    std::vector<int> testRow;
+    std::vector<int> testCol;
+    std::vector<double> testData; 
+    int testLength;
+    fileDense(fnameD, &testRow, $testCol, &testData, &testLength); 
+    totErr = rmse(user_factors, item_factors, testRow.data(), 
+                testCol.data(), testData.data(), 
+                testLength, factors)
     // we guchhi
+    std::cout<<totErr<<std::endl;
     // predict things and see accuracy 
 
 
