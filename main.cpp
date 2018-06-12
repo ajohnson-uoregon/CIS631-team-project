@@ -7,7 +7,7 @@
 #include <cstring>
 #include "rmse.h"
 #include "leastsqr.h"
-#include "calculateLoss.cu" 
+#include "calculateLoss.h" 
 
 void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,
                     std::vector<double>* data, int* users, int* items)
