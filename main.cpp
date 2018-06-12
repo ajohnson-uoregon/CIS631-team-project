@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <cstring>
+#include <rmse.cu> 
 
 void fileProcess(char* fname, std::vector<int>* indptr, std::vector<int>* indices,
                     std::vector<double>* data, int* users, int* items)
@@ -65,7 +66,7 @@ void fileDense(char* fname, std::vector<int>* rows, std::vector<int>* cols,
         }
     }
 
-    *length = rows.size();
+    *length = rows->size();
     fclose(fp);
 }
 
@@ -124,7 +125,7 @@ int main(int argc, char** argv) {
     std::vector<int> testCol;
     std::vector<double> testData; 
     int testLength;
-    fileDense(fnameD, &testRow, $testCol, &testData, &testLength); 
+    fileDense(fnameD, &testRow, &testCol, &testData, &testLength); 
     totErr = rmse(user_factors, item_factors, testRow.data(), 
                 testCol.data(), testData.data(), 
                 testLength, factors)
