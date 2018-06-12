@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     }
 
     printf("malloced userfactors\n");
-    
+
     err = cudaMallocManaged(&itemFactors, items*factors*sizeof(double));
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
@@ -144,13 +144,16 @@ int main(int argc, char** argv) {
       cublasDestroy(handle);
       return -1;
     }
-    
+
     printf("malloced itemfactors\n");
-    
+
     GPU_fill_rand(userFactors, users, factors);
     GPU_fill_rand(itemFactors, items, factors);
-    
+
     printf("filled random matrices\n");
+    cudaFree(userFactors);
+    cudaFree(itemFactors);
+    cublasDestroy(handle);
     return 0;
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
@@ -160,7 +163,7 @@ int main(int argc, char** argv) {
         least_squares(handle, indptrT.data(), indicesT.data(), dataT.data(), items,
                         users, factors, itemFactors, userFactors,
                         .01, 0, items);
-        calculate_loss(handle, indptr.data(), indices.data(), data.data(), 
+        calculate_loss(handle, indptr.data(), indices.data(), data.data(),
                         userFactors, itemFactors, .01,
                         users, items, factors, data.size());
     }
