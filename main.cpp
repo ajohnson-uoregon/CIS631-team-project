@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into indptr\n");
-    err = cudaMemcpy(indptr, indptr_vec.data(), indptr_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(indptr, indptr_vec.data(), indptr_vec.size()*sizeof(int), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into indices\n");
-    err = cudaMemcpy(indices, indices_vec.data(), indices_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(indices, indices_vec.data(), indices_vec.size()*sizeof(int), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into data\n");
-    err = cudaMemcpy(data, data_vec.data(), data_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(data, data_vec.data(), data_vec.size()*sizeof(double), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into indptrT\n");
-    err = cudaMemcpy(indptrT, indptrT_vec.data(), indptrT_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(indptrT, indptrT_vec.data(), indptrT_vec.size()*sizeof(int), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -274,7 +274,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into indicesT\n");
-    err = cudaMemcpy(indicesT, indicesT_vec.data(), indicesT_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(indicesT, indicesT_vec.data(), indicesT_vec.size()*sizeof(int), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -304,7 +304,7 @@ int main(int argc, char** argv) {
     }
 
     printf("copying values into dataT\n");
-    err = cudaMemcpy(dataT, dataT_vec.data(), dataT_vec.size(), cudaMemcpyHostToDevice);
+    err = cudaMemcpy(dataT, dataT_vec.data(), dataT_vec.size()*sizeof(double), cudaMemcpyHostToDevice);
     if (err != cudaSuccess) {
       printf("%s\n", cudaGetErrorString(err));
       cudaFree(userFactors);
@@ -334,17 +334,17 @@ int main(int argc, char** argv) {
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
         printf("first least squares iter %d\n", i);
-        least_squares(handle, indptr, indices, data, users,
-                        items, factors, userFactors, itemFactors,
-                        .01, 0, users);
-        printf("second least squares iter %d\n", i);
-        least_squares(handle, indptrT, indicesT, dataT, items,
+        least_squares(handle, indptr, indices, data, items,
                         users, factors, itemFactors, userFactors,
                         .01, 0, items);
+        printf("second least squares iter %d\n", i);
+        least_squares(handle, indptrT, indicesT, dataT, users,
+                        items, factors, userFactors, itemFactors,
+                        .01, 0, users);
         printf("calculate loss iter %d\n", i);
-        calculate_loss(handle, indptr, indices, data,
+        calculate_loss(handle, indptrT, indicesT, dataT,
                         userFactors, itemFactors, .01,
-                        users, items, factors, data_vec.size());
+                        users, items, factors, dataT_vec.size());
     }
 
     printf("freeing things\n");
