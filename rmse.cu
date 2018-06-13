@@ -12,6 +12,7 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
             int* rows, int* cols, double* ratings, int num_things, int factors) {
     double error = 0;
     cublasStatus_t stat;
+    cudaError_t err;
 
     for (int k = 0; k < num_things; ++k) {
         printf("rmse iter %d\n", k);
@@ -23,8 +24,23 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
         printf("%d\n", iid);
         printf("%f\n", rating);
 
-        double* user = &user_factors[uid*factors];
-        double* item = &item_factors[iid*factors];
+        double* user;
+        err = cudaMallocManaged(&user, factors*sizeof(double));
+        if (err != cudaSuccess) {
+          printf("%s\n", cudaGetErrorString(err));
+          cudaFree(user);
+          return -1;
+        }
+        cudaMemcpy(user, &user_factors[uid*factors], factors*sizeof(double), cudaMemcpyDeviceToDevice);
+        double* item;
+        err = cudaMallocManaged(&item, factors*sizeof(double));
+        if (err != cudaSuccess) {
+          printf("%s\n", cudaGetErrorString(err));
+          cudaFree(user);
+          cudaFree(item);
+          return -1;
+        }
+        cudaMemcpy(item, &item_factors[iid*factors], factors*sizeof(double), cudaMemcpyDeviceToDevice);
         cudaDeviceSynchronize();
 
         // printf("%f\n", user[0]);
@@ -40,6 +56,8 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
         }
         error += std::pow((rating-guess), 2);
         printf("error %f\n", error);
+        cudaFree(user);
+        cudaFree(item);
     }
     return std::sqrt(error/num_things);
 }
