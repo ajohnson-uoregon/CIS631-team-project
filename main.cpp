@@ -318,15 +318,18 @@ int main(int argc, char** argv) {
       cublasDestroy(handle);
       return -1;
     }
-
-    // for (int i =0; i < 10; ++i) {
-    //   printf("%f\n", userFactors[i]);
-    //   printf("%f\n", data_vec[i]);
-    //   printf("%f\n", data[i]);
-    //   printf("\n");
-    // }
-    printf("%d\n", indptr_vec[0]);
-    printf("%d\n", indptr_vec[1]);
+    cudaDeviceSynchronize();
+    for (int i =0; i < 10; ++i) {
+      printf("%f\n", userFactors[i]);
+      printf("%f\n", data_vec[i]);
+      printf("%f\n", data[i]);
+      printf("%d\n", indptr[i]);
+      printf("%d\n", indices[i]);
+      printf("\n");
+    }
+    //printf("%d\n", indptr_vec.data()[0]);
+    //printf("%d\n", indptr_vec[0]);
+    //printf("%d\n", indptr_vec[1]);
 
     //run iterations of leastsqrs and calculateLoss
     for(int i=0; i <iterations; ++i) {
