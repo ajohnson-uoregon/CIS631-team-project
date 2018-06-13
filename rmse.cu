@@ -27,8 +27,8 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
         double* item = &item_factors[iid*factors];
         cudaDeviceSynchronize();
 
-        printf("%f\n", user[0]);
-        printf("%f\n", item[0]);
+        // printf("%f\n", user[0]);
+        // printf("%f\n", item[0]);
 
         double guess;
 
@@ -39,6 +39,7 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
             return -1;
         }
         error += std::pow((rating-guess), 2);
+        printf("error %f\n", error);
     }
     return std::sqrt(error/num_things);
 }
