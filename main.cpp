@@ -319,14 +319,14 @@ int main(int argc, char** argv) {
       return -1;
     }
     cudaDeviceSynchronize();
-    for (int i =0; i < 10; ++i) {
-      printf("%f\n", userFactors[i]);
-      printf("%f\n", data_vec[i]);
-      printf("%f\n", data[i]);
-      printf("%d\n", indptr[i]);
-      printf("%d\n", indices[i]);
-      printf("\n");
-    }
+    // for (int i =0; i < 10; ++i) {
+    //   printf("%f\n", userFactors[i]);
+    //   printf("%f\n", data_vec[i]);
+    //   printf("%f\n", data[i]);
+    //   printf("%d\n", indptr[i]);
+    //   printf("%d\n", indices[i]);
+    //   printf("\n");
+    // }
     //printf("%d\n", indptr_vec.data()[0]);
     //printf("%d\n", indptr_vec[0]);
     //printf("%d\n", indptr_vec[1]);
@@ -342,22 +342,13 @@ int main(int argc, char** argv) {
                         items, factors, userFactors, itemFactors,
                         .01, 0, users);
         printf("calculate loss iter %d\n", i);
-        calculate_loss(handle, indptrT, indicesT, dataT,
+        double loss = calculate_loss(handle, indptrT, indicesT, dataT,
                         userFactors, itemFactors, .01,
                         users, items, factors, dataT_vec.size());
+        printf("loss at iter %d is %f\n", i, loss);
     }
 
-    printf("freeing things\n");
-    cudaFree(userFactors);
-    cudaFree(itemFactors);
-    cudaFree(indptr);
-    cudaFree(indices);
-    cudaFree(data);
-    cudaFree(indptrT);
-    cudaFree(indicesT);
-    cudaFree(dataT);
-    cublasDestroy(handle);
-    return 0;
+
     // run rmse
     double totErr;
     //come back to
@@ -366,6 +357,10 @@ int main(int argc, char** argv) {
     std::vector<double> testData;
     int testLength;
     fileDense(fnameD, &testRow, &testCol, &testData, &testLength);
+    printf("test row %d\n", testRow[5]);
+    printf("test col %d\n", testCol[5]);
+    printf("test data %f\n", testData[5]);
+    cudaDeviceSynchronize();
     totErr = rmse(handle, userFactors, itemFactors, testRow.data(),
                 testCol.data(), testData.data(),
                 testLength, factors);
@@ -377,7 +372,16 @@ int main(int argc, char** argv) {
     printf("users: %d\n", users);
     printf("items: %d\n", items);
     printf("factors: %d\n", factors);
-
+    printf("freeing things\n");
+    cudaFree(userFactors);
+    cudaFree(itemFactors);
+    cudaFree(indptr);
+    cudaFree(indices);
+    cudaFree(data);
+    cudaFree(indptrT);
+    cudaFree(indicesT);
+    cudaFree(dataT);
+    cublasDestroy(handle);
     return 0;
 
 }

@@ -7,28 +7,54 @@ double calculate_loss(cublasHandle_t handle, int* indptr, int* indices, double* 
       int total_confidence = 0;
       int item_norm = 0;
       int user_norm = 0;
-      cublasStatus_t err;
+      cublasStatus_t stat;
+      cudaError_t err;
 
       // malloc this
-      double** YtY;
+      double* YtY;
+      err = cudaMallocManaged(&YtY, factors*factors*sizeof(double));
+      if (err != cudaSuccess) {
+        printf("%s\n", cudaGetErrorString(err));
+        cudaFree(YtY);
+        return -1;
+      }
       const double alpha = 1;
       const double beta = 0;
 
       // do transpose
-      err = cublasDgeam(handle, CUBLAS_OP_T, CUBLAS_OP_N, items, factors,
-                &alpha, Y, items, &beta, Y, items, YtY[0], factors);
-
+      stat = cublasDgemm(handle, CUBLAS_OP_T, CUBLAS_OP_N, factors, factors, items,
+                &alpha, Y, items, Y, items, &beta, YtY, factors);
+      if (stat != CUBLAS_STATUS_SUCCESS) {
+          printf ("dgemm failed\n");
+          cudaFree(YtY);
+          return -1;
+      }
 
       for (int u = 0; u < users; ++u) {
+        if (u % 10000 == 0) {
+          printf("loss iter %d\n", u);
+        }
           cudaDeviceSynchronize();
           double temp = 1.0;
 
           double* r;
+          err = cudaMallocManaged(&r, items*sizeof(double));
+          if (err != cudaSuccess) {
+            printf("%s\n", cudaGetErrorString(err));
+            cudaFree(YtY);
+            cudaFree(r);
+            return -1;
+          }
           double* Xu = &X[u*factors];
 
-
-          err = cublasDgemv(handle, CUBLAS_OP_N, items, factors,
+          stat = cublasDgemv(handle, CUBLAS_OP_N, items, factors,
                     &alpha, Y, items, Xu, 1, &beta, r, 1);
+          if (stat != CUBLAS_STATUS_SUCCESS) {
+              printf ("dgemv failed\n");
+              cudaFree(YtY);
+              cudaFree(r);
+              return -1;
+          }
           cudaDeviceSynchronize();
 
           int rowStart = indptr[u];
@@ -48,21 +74,47 @@ double calculate_loss(cublasHandle_t handle, int* indptr, int* indices, double* 
               double* Yi = &Y[i*factors];
               cudaDeviceSynchronize();
               double d;
-              err = cublasDdot(handle, factors, Yi, 1, Xu, 1, &d);
+              stat = cublasDdot(handle, factors, Yi, 1, Xu, 1, &d);
+              if (stat != CUBLAS_STATUS_SUCCESS) {
+                  printf ("ddot 1 failed\n");
+                  cudaFree(YtY);
+                  cudaFree(r);
+                  return -1;
+              }
               temp = (confidence - 1)*d - (2*confidence);
               cudaDeviceSynchronize();
-              err = cublasDaxpy(handle, factors, &temp, Yi, 1, r, 1);
+              stat = cublasDaxpy(handle, factors, &temp, Yi, 1, r, 1);
+              if (stat != CUBLAS_STATUS_SUCCESS) {
+                  printf ("daxpy failed\n");
+                  cudaFree(YtY);
+                  cudaFree(r);
+                  return -1;
+              }
               total_confidence += confidence;
               loss += confidence;
           }
 
           double other_temp;
           cudaDeviceSynchronize();
-          err = cublasDdot(handle, factors, r, 1, Xu, 1, &other_temp);
+          stat = cublasDdot(handle, factors, r, 1, Xu, 1, &other_temp);
+          if (stat != CUBLAS_STATUS_SUCCESS) {
+              printf ("ddot 2 failed\n");
+              cudaFree(YtY);
+              cudaFree(r);
+              return -1;
+          }
           loss += other_temp;
           cudaDeviceSynchronize();
-          err = cublasDdot(handle, factors, Xu, 1, Xu, 1, &other_temp);
+          stat = cublasDdot(handle, factors, Xu, 1, Xu, 1, &other_temp);
+          if (stat != CUBLAS_STATUS_SUCCESS) {
+              printf ("ddot 3 failed\n");
+              cudaFree(YtY);
+              cudaFree(r);
+              return -1;
+          }
           user_norm += other_temp;
+
+          cudaFree(r);
       }
 
       for (int i = 0; i < items; ++i) {
@@ -71,11 +123,18 @@ double calculate_loss(cublasHandle_t handle, int* indptr, int* indices, double* 
 
           double other_temp;
 
-          err = cublasDdot(handle, factors, Yi, 1, Yi, 1, &other_temp);
+          stat = cublasDdot(handle, factors, Yi, 1, Yi, 1, &other_temp);
+          if (stat != CUBLAS_STATUS_SUCCESS) {
+              printf ("ddot 4 failed\n");
+              cudaFree(YtY);
+              return -1;
+          }
           item_norm += other_temp;
       }
 
       loss += reg * (item_norm + user_norm);
 
-      return loss / (total_confidence + users * items - nnz);
+      cudaFree(YtY);
+
+      return loss / ((double) (total_confidence + users * items - nnz));
   }

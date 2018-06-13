@@ -2,6 +2,7 @@
 #define RECOMMEND_CU
 
 // #include "recommend.h"
+#include <iostream>
 #include <cuda_runtime.h>
 #include "cublas_v2.h"
 #include "cusparse.h"

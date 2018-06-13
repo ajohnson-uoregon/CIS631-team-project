@@ -70,10 +70,10 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
     cublasSideMode_t mode = CUBLAS_SIDE_LEFT;
 
     for (int i =0; i < users; ++i) {
-      if (i % 1000 == 0 || i == users-1) {
+      if (i % 10000 == 0 || i == users-1) {
         printf("iteration %d\n", i);
       }
-        printf("starting for loop\n");
+        //printf("starting for loop\n");
         // printf("users %d i %d\n", users, i);
         cudaDeviceSynchronize();
 
@@ -84,10 +84,10 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           printf("AW CRAP\n");
         }
 
-        printf("rowstart %d\n", rowStart);
-        printf("rowEnd %d\n", rowEnd);
+        // printf("rowstart %d\n", rowStart);
+        // printf("rowEnd %d\n", rowEnd);
 
-        printf("merp\n");
+        // printf("merp\n");
         int cols[rowEnd-rowStart];
         // printf("%d\n", indic[rowStart]);
 
@@ -98,7 +98,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         //   return;
         // }
         // printf("%d\n", cols[0]);
-        printf("done w first memcpy\n");
+        // printf("done w first memcpy\n");
         double vals[rowEnd-rowStart];
         memcpy(vals, &data[rowStart], (rowEnd-rowStart)*sizeof(double));
         // err = cudaMemcpy(vals, &data[rowStart], rowEnd-rowStart, cudaMemcpyDeviceToHost);
@@ -106,7 +106,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         //   printf("first copy %s\n", cudaGetErrorString(err));
         //   return;
         // }
-        printf("done with memcpys\n");
+        // printf("done with memcpys\n");
 
         double diagVec[items];
         std::fill_n(diagVec, items, 0);
@@ -121,7 +121,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
             diagVec[cols[iter]] = vals[iter];
             //printf("success\n");
         }
-        printf("making device vec\n");
+        // printf("making device vec\n");
         double* diagVec_dev;
         cudaDeviceSynchronize();
         err = cudaMallocManaged(&diagVec_dev, items*sizeof(double));
@@ -138,7 +138,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           cudaFree(diagVec_dev);
           return;
         }
-        printf("making ansC\n");
+        // printf("making ansC\n");
 
         double* ansC; //[items][factors];
 
@@ -151,7 +151,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           return;
         }
         cudaDeviceSynchronize();
-        printf("dgmm\n");
+        // printf("dgmm\n");
         stat = cublasDdgmm(handle, mode, items, factors, y, items, diagVec_dev, 1, ansC, items);
         if (stat != CUBLAS_STATUS_SUCCESS) {
             printf ("ddgmm failed\n");
@@ -173,7 +173,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           return;
         }
 
-        printf("gemm\n");
+        // printf("gemm\n");
         stat = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, factors, factors,
                         items, &alpha, yt, factors, ansC, items, &beta, ytcy, factors);
         if (stat != CUBLAS_STATUS_SUCCESS) {
@@ -212,7 +212,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           return;
         }
         cudaDeviceSynchronize();
-        printf("gemv\n");
+        // printf("gemv\n");
         stat = cublasDgemv (handle, CUBLAS_OP_N, factors, items,
                         &alpha, yt, factors, diagVec_dev, 1, &beta, ytcu, 1);
         if (stat != CUBLAS_STATUS_SUCCESS) {
@@ -225,7 +225,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
             return;
         }
         cudaDeviceSynchronize();
-        printf("solver fun times\n");
+        // printf("solver fun times\n");
         solve_stat = cusolverDnCreate(&solve_handle);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
           printf("creating solver failed\n");
@@ -277,7 +277,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           return;
         }
         cudaDeviceSynchronize();
-        printf("factorizing\n");
+        // printf("factorizing\n");
         solve_stat = cusolverDnDpotrf(solve_handle, CUBLAS_FILL_MODE_UPPER,
            factors, ytcy, factors, workspace, Lwork, rfOut);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
@@ -307,7 +307,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           cudaFree(rsOut);
           return;
         }
-        printf("solving\n");
+        // printf("solving\n");
         solve_stat = cusolverDnDpotrs(solve_handle, CUBLAS_FILL_MODE_UPPER,
           factors, 1, ytcy, factors, ytcu, factors, rsOut);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
@@ -334,7 +334,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         cudaMemcpy(&x[i*factors], &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToDevice);
         //x[i] = ytcu;
         cudaDeviceSynchronize();
-        printf("freeing things\n");
+        // printf("freeing things\n");
         cusolverDnDestroy(solve_handle);
         cudaFree(diagVec_dev);
         cudaFree(ansC);
