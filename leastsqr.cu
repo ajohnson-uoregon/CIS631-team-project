@@ -213,6 +213,9 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         }
         double host[factors];
         cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
+        for (int f = 0; f < factors; ++f) {
+          printf("merp %f\n", host[f]);
+        }
         cudaDeviceSynchronize();
         // printf("gemv\n");
         stat = cublasDgemv (handle, CUBLAS_OP_N, factors, items,
