@@ -25,6 +25,7 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
         printf("%f\n", rating);
 
         double* user;
+        double user_host[factors];
         err = cudaMallocManaged(&user, factors*sizeof(double));
         if (err != cudaSuccess) {
           printf("%s\n", cudaGetErrorString(err));
@@ -32,7 +33,9 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
           return -1;
         }
         cudaMemcpy(user, &user_factors[uid*factors], factors*sizeof(double), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(user_host, &user_factors[uid*factors], factors*sizeof(double), cudaMemcpyDeviceToHost);
         double* item;
+        double item_host[factors];
         err = cudaMallocManaged(&item, factors*sizeof(double));
         if (err != cudaSuccess) {
           printf("%s\n", cudaGetErrorString(err));
@@ -41,8 +44,13 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
           return -1;
         }
         cudaMemcpy(item, &item_factors[iid*factors], factors*sizeof(double), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(item_host, &item_factors[iid*factors], factors*sizeof(double), cudaMemcpyDeviceToHost);
         cudaDeviceSynchronize();
 
+        for (int i = 0; i < factors; ++i) {
+          printf("%f\n", user_host[i]);
+          printf("%f\n", item_host[i]);
+        }
         // printf("%f\n", user[0]);
         // printf("%f\n", item[0]);
 
