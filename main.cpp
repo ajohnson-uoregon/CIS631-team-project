@@ -381,12 +381,17 @@ int main(int argc, char** argv) {
     cudaEventElapsedTime(&milliseconds, start, stop);
     printf("total time: %f\n", milliseconds);
 
-    double userfactors_host[users*factors];
-    double itemfactors_host[items*factors];
+    double* userfactors_host;//[users*factors];
+    double* itemfactors_host;//[items*factors];a
 
+    userfactors_host = (double*) malloc(users*factors*sizeof(double));
+    itemfactors_host = (double*) malloc(items*factors*sizeof(double));
+
+cudaDeviceSynchronize();
     cudaMemcpy(userfactors_host, userFactors, users*factors*sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(itemfactors_host, itemFactors, items*factors*sizeof(double), cudaMemcpyDeviceToHost);
-
+printf("about to dump files\n");
+cudaDeviceSynchronize();
     std::ofstream userfile ("userfactors.txt");
     if (userfile.is_open())
     {
@@ -418,6 +423,8 @@ int main(int argc, char** argv) {
     printf("items: %d\n", items);
     printf("factors: %d\n", factors);
     printf("freeing things\n");
+free(userfactors_host);
+free(itemfactors_host);
     cudaFree(userFactors);
     cudaFree(itemFactors);
     cudaFree(indptr);
