@@ -193,11 +193,11 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         //     printf("%f\n", ytcy[0]);
         //     ytcy[factors*k +k] += reg;
         // }
-        // dim3 threads(32);
-        // dim3 blocks(iDivUp(factors*factors, 32));
-        // shiftDiagonal<<<blocks, threads>>>(ytcy, reg, factors);
+        dim3 threads(32);
+        dim3 blocks(iDivUp(factors*factors, 32));
+        shiftDiagonal<<<blocks, threads>>>(ytcy, reg, factors);
         // printf("done w diagonal\n");
-        //cudaDeviceSynchronize();
+        cudaDeviceSynchronize();
 
         double* ytcu; //[factors];
         // printf("kjdfjkfdjkfd\n");
@@ -211,11 +211,11 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           cudaFree(ytcu);
           return;
         }
-        double host[factors];
-        cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
-        for (int f = 0; f < factors; ++f) {
-          printf("merp %f\n", host[f]);
-        }
+        // double host[factors];
+        // cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
+        // for (int f = 0; f < factors; ++f) {
+        //   printf("merp %f\n", host[f]);
+        // }
         cudaDeviceSynchronize();
         // printf("gemv\n");
         stat = cublasDgemv (handle, CUBLAS_OP_N, factors, items,
@@ -230,6 +230,10 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
             return;
         }
         cudaDeviceSynchronize();
+        // cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
+        // for (int f = 0; f < factors; ++f) {
+        //   printf("merp2 %f\n", host[f]);
+        // }
         // printf("solver fun times\n");
         solve_stat = cusolverDnCreate(&solve_handle);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
@@ -283,7 +287,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         }
         cudaDeviceSynchronize();
         // printf("factorizing\n");
-        solve_stat = cusolverDnDpotrf(solve_handle, CUBLAS_FILL_MODE_UPPER,
+        solve_stat = cusolverDnDpotrf(solve_handle, CUBLAS_FILL_MODE_LOWER,
            factors, ytcy, factors, workspace, Lwork, rfOut);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
           printf("factorization failed\n");
@@ -312,8 +316,12 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           cudaFree(rsOut);
           return;
         }
+        // cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
+        // for (int f = 0; f < factors; ++f) {
+        //   printf("merp3 %f\n", host[f]);
+        // }
         // printf("solving\n");
-        solve_stat = cusolverDnDpotrs(solve_handle, CUBLAS_FILL_MODE_UPPER,
+        solve_stat = cusolverDnDpotrs(solve_handle, CUBLAS_FILL_MODE_LOWER,
           factors, 1, ytcy, factors, ytcu, factors, rsOut);
         if (CUSOLVER_STATUS_SUCCESS != solve_stat) {
           printf("solver failed\n");
@@ -338,10 +346,10 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         // printf("doing memcpy\n");
         cudaMemcpy(&x[i*factors], &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToDevice);
         //double host[factors];
-        cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
-        for (int f = 0; f < factors; ++f) {
-          printf(" oh no %f\n", host[f]);
-        }
+        // cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
+        // for (int f = 0; f < factors; ++f) {
+        //   printf(" oh no %f\n", host[f]);
+        // }
         //x[i] = ytcu;
         cudaDeviceSynchronize();
         // printf("freeing things\n");
