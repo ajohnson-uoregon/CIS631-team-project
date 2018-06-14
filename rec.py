@@ -96,7 +96,7 @@ print(mat.shape)
 
 items, users = mat.shape
 regularization = 0.01 #default borrowed from implicit
-factors = 350
+factors = 10
 
 sys.stdout.flush()
 
@@ -138,13 +138,13 @@ wf = []
 with open("userfactors.txt", "r") as uf:
     for line in uf:
         l = line.split(" ")
-        wf.append(list(map(float, l)))
+        wf.append(list(map(float, l[:-1])))
 tf = []
 #TODO: read in matrices
 with open("itemfactors.txt", "r") as uf:
     for line in uf:
         l = line.split(" ")
-        tf.append(list(map(float, l)))
+        tf.append(list(map(float, l[:-1])))
 
 print("work factors")
 user_factors = petsc.Mat()
