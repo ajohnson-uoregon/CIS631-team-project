@@ -89,6 +89,12 @@ int main(int argc, char** argv) {
     cublasHandle_t handle;
     cudaError_t err;
 
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     int users = 0;
     int items = 0;
 
@@ -367,6 +373,13 @@ int main(int argc, char** argv) {
     // we guchhi
     std::cout<<totErr<<std::endl;
     // predict things and see accuracy
+
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    printf("total time: %f\n", milliseconds);
 
 
     printf("users: %d\n", users);
