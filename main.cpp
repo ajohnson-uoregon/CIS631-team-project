@@ -387,7 +387,7 @@ int main(int argc, char** argv) {
     cudaMemcpy(userfactors_host, userFactors, users*factors*sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(itemfactors_host, itemFactors, items*factors*sizeof(double), cudaMemcpyDeviceToHost);
 
-    ofstream userfile ("userfactors.txt");
+    std::ofstream userfile ("userfactors.txt");
     if (userfile.is_open())
     {
       for (int u = 0; u < users*factors; ++u) {
@@ -398,9 +398,9 @@ int main(int argc, char** argv) {
       }
       userfile.close();
     }
-    else cout << "Unable to open file";
+    else printf("Unable to open file\n");
 
-    ofstream itemfile ("itemfactors.txt");
+    std::ofstream itemfile ("itemfactors.txt");
     if (itemfile.is_open())
     {
       for (int u = 0; u < items*factors; ++u) {
@@ -411,7 +411,7 @@ int main(int argc, char** argv) {
       }
       itemfile.close();
     }
-    else cout << "Unable to open file";
+    else printf("Unable to open file\n");
 
 
     printf("users: %d\n", users);
