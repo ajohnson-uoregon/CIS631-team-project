@@ -211,6 +211,8 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
           cudaFree(ytcu);
           return;
         }
+        double host[factors];
+        cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
         cudaDeviceSynchronize();
         // printf("gemv\n");
         stat = cublasDgemv (handle, CUBLAS_OP_N, factors, items,
@@ -332,7 +334,7 @@ void least_squares (cublasHandle_t handle, int* indptr, int* indic, double* data
         cudaDeviceSynchronize();
         // printf("doing memcpy\n");
         cudaMemcpy(&x[i*factors], &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToDevice);
-        double host[factors];
+        //double host[factors];
         cudaMemcpy(host, &ytcu[0], factors*sizeof(double), cudaMemcpyDeviceToHost);
         for (int f = 0; f < factors; ++f) {
           printf(" oh no %f\n", host[f]);
