@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include "recommend.h"
 #include <cmath>
 #include <vector>
@@ -380,6 +380,38 @@ int main(int argc, char** argv) {
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
     printf("total time: %f\n", milliseconds);
+
+    double userfactors_host[users*factors];
+    double itemfactors_host[items*factors];
+
+    cudaMemcpy(userfactors_host, userFactors, users*factors*sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(itemfactors_host, itemFactors, items*factors*sizeof(double), cudaMemcpyDeviceToHost);
+
+    ofstream userfile ("userfactors.txt");
+    if (userfile.is_open())
+    {
+      for (int u = 0; u < users*factors; ++u) {
+        userfile << userfactors_host[u] << " ";
+        if (u % factors == factors-1) {
+          userfile << "\n";
+        }
+      }
+      userfile.close();
+    }
+    else cout << "Unable to open file";
+
+    ofstream itemfile ("itemfactors.txt");
+    if (itemfile.is_open())
+    {
+      for (int u = 0; u < items*factors; ++u) {
+        itemfile << itemfactors_host[u] << " ";
+        if (u % factors == factors-1) {
+          itemfile << "\n";
+        }
+      }
+      itemfile.close();
+    }
+    else cout << "Unable to open file";
 
 
     printf("users: %d\n", users);
