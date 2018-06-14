@@ -54,7 +54,9 @@ double rmse(cublasHandle_t handle, double* user_factors, double* item_factors,
             printf("%d\n", stat);
             return -1;
         }
-        error += std::pow((rating-guess), 2);
+        error += std::pow(abs(rating-guess), 2);
+        printf("rating %f\n", rating);
+        printf("guess %f\n", guess);
         printf("error %f\n", error);
         cudaFree(user);
         cudaFree(item);
